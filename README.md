@@ -53,24 +53,128 @@ This project is an end-to-end data analysis solution designed to extract critica
 
 ### 9. SQL Analysis: Complex Queries and Business Problem Solving
    - **Business Problem-Solving**: Write and execute complex SQL queries to answer critical business questions, such as:
-     - Q1. What are the different payment methods, and how many transactions and items were sold with each method?
-       ```sql
-      SELECT 
-          payment_method, 
-          COUNT(*) AS no_payments, 
-          SUM(quantity) AS no_quantity_sold
-      FROM 
-          walmart
-      GROUP BY 
-          payment_method;
-     -
-     - Revenue trends across branches and categories.
-     - Identifying best-selling product categories.
-     - Sales performance by time, city, and payment method.
-     - Analyzing peak sales periods and customer buying patterns.
-     - Profit margin analysis by branch and category.
-   - **Documentation**: Keep clear notes of each query's objective, approach, and results.
+   ### Q1. What are the different payment methods, and how many transactions and items were sold with each method?
 
+```sql
+SELECT 
+    payment_method, 
+    COUNT(*) AS no_payments, 
+    SUM(quantity) AS no_quantity_sold 
+FROM walmart 
+GROUP BY payment_method;
+```
+   ### Q2. Which category received the highest average rating in each branch?
+```sql
+SELECT *
+FROM (
+    SELECT 
+        branch, 
+        category, 
+        AVG(rating) AS avg_rating, 
+        RANK() OVER (PARTITION BY branch ORDER BY AVG(rating) DESC) AS `rank` 
+    FROM 
+        walmart 
+    GROUP BY 
+        branch, category
+) AS ranked_categories  
+WHERE `rank` = 1;
+```
+   ### Q3. What is the busiest day of the week for each branch based on transaction volume?
+```sql
+SELECT *
+FROM (
+    SELECT 
+        branch, 
+        DATE_FORMAT(STR_TO_DATE(date, '%d/%m/%Y'), '%W') AS day_name, 
+        COUNT(*) AS no_transaction, 
+        RANK() OVER (PARTITION BY branch ORDER BY COUNT(*) DESC) AS `rank` 
+    FROM 
+        walmart 
+    GROUP BY 
+        branch, day_name
+) AS ranked_transactions  
+WHERE `rank` = 1;  
+```
+   ### Q4. Calculate the Total quantity of the items sold per payment method.
+```sql
+select payment_method, 
+	sum(quantity) as no_quantity_sold
+from walmart
+group by payment_method;
+```
+   ### Q5. What are the average, minimum, and maximum ratings for each category in each city?
+```sql
+select 
+	city,
+    category,
+    min(rating) as min_rating,
+    max(rating) as max_rating,
+    avg(rating) as avg_rating
+from walmart
+group by city, category;
+```
+   ### Q6. What is the total profit for each category, ranked from highest to lowest ranking?
+```sql
+WITH cte AS (
+    SELECT 
+        branch,
+        payment_method,
+        COUNT(*) AS transaction_count,
+        RANK() OVER (PARTITION BY branch ORDER BY COUNT(*) DESC) AS `rank`
+    FROM 
+        walmart
+    GROUP BY 
+        branch, payment_method
+)
+SELECT *
+FROM cte
+WHERE `rank` = 1;
+```
+   ### Q8. How many transactions occur in each shift (Morning, Afternoon, Evening) across branches?
+```sql
+SELECT 
+	branch,
+    CASE 
+        WHEN HOUR(CAST(time AS TIME)) < 12 THEN 'Morning'
+        WHEN HOUR(CAST(time AS TIME)) BETWEEN 12 AND 17 THEN 'Afternoon'
+        ELSE 'Evening'
+    END AS day_time,
+    COUNT(*)
+FROM 
+    walmart
+GROUP BY 1,2
+ORDER BY 1,3 DESC;
+```
+### Q9. Which branches experienced the largest decrease in revenue compared to the previous year's?
+```sql
+WITH revenue_2022 AS (
+    SELECT 
+        branch,
+        SUM(total) AS revenue
+    FROM walmart
+    WHERE YEAR(STR_TO_DATE(date, '%d/%m/%Y')) = 2022
+    GROUP BY branch
+),
+revenue_2023 AS (
+    SELECT 
+        branch,
+        SUM(total) AS revenue
+    FROM walmart
+    WHERE YEAR(STR_TO_DATE(date, '%d/%m/%Y')) = 2023
+    GROUP BY branch
+)
+SELECT 
+    r2022.branch,
+    r2022.revenue AS revenue_2022,
+    r2023.revenue AS revenue_2023,
+    ROUND(((r2022.revenue - r2023.revenue) / r2022.revenue) * 100, 2) AS revenue_decrease_ratio
+FROM revenue_2022 AS r2022
+JOIN revenue_2023 AS r2023 ON r2022.branch = r2023.branch
+WHERE r2022.revenue > r2023.revenue
+ORDER BY revenue_decrease_ratio DESC
+LIMIT 5;
+
+```
 ### 10. Project Publishing and Documentation
    - **Documentation**: Maintain well-structured documentation of the entire process in Markdown or a Jupyter Notebook.
    - **Project Publishing**: Publish the completed project on GitHub or any other version control platform, including:
