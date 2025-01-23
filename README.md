@@ -1,4 +1,4 @@
-# Walmart Data Analysis: End-to-End SQL + Python Project P-9
+# Walmart Data Analysis: End-to-End SQL + Python Project 
 
 ## Project Overview
 
@@ -54,11 +54,15 @@ This project is an end-to-end data analysis solution designed to extract critica
 ### 9. SQL Analysis: Complex Queries and Business Problem Solving
    - **Business Problem-Solving**: Write and execute complex SQL queries to answer critical business questions, such as:
      - Q1. What are the different payment methods, and how many transactions and items were sold with each method?
-       '''sql
-      select payment_method, count(*) as no_payments, sum(quantity) as no_quantity_sold
-      from walmart
-      group by payment_method;
-
+       ```sql
+      SELECT 
+          payment_method, 
+          COUNT(*) AS no_payments, 
+          SUM(quantity) AS no_quantity_sold
+      FROM 
+          walmart
+      GROUP BY 
+          payment_method;
      -
      - Revenue trends across branches and categories.
      - Identifying best-selling product categories.
@@ -80,7 +84,7 @@ This project is an end-to-end data analysis solution designed to extract critica
 ## Requirements
 
 - **Python 3.8+**
-- **SQL Databases**: MySQL, PostgreSQL
+- **SQL Databases**: MySQL
 - **Python Libraries**:
   - `pandas`, `numpy`, `sqlalchemy`, `mysql-connector-python`, `psycopg2`
 - **Kaggle API Key** (for data downloading)
