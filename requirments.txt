@@ -1,0 +1,12 @@
+Pandas
+pymysql
+sqlalchemy
+psycopg2
+
+# mysql toolkit
+import pymysql #this will work as adapter
+from sqlalchemy 
+import create_engine
+
+#prosgresql toolkit
+import psycopg2
